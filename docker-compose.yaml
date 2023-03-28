@@ -1,0 +1,21 @@
+version: "3.6"
+
+services:
+  blitzerbot:
+    build:
+      context: .
+      network: host
+    container_name: blitzerbot
+    restart: always
+    network_mode: host
+    tmpfs:
+      - /tmp
+    environment:
+      - TZ=Europe/Berlin
+      - TWITTER_CONSUMER_KEY=AAA
+      - TWITTER_CONSUMER_SECRET=AAA
+      - TWITTER_ACCESS_TOKEN=AAA
+      - TWITTER_ACCESS_SECRET=AAA
+      - TWITTER_TARGET_ACCOUNT=AAA
+      - TELEGRAM_TOKEN=AAA
+      - TELEGRAM_CHAT_ID=@AAA
