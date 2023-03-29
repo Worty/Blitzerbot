@@ -1,9 +1,8 @@
-name: Build backend container
+name: Build container image
 on:
   push:
-    # Pattern matched against refs/tags
     tags:
-      - "**" # Push events to every tag including hierarchical tags like v1.0/beta
+      - "*"
 
 jobs:
   docker:
@@ -39,7 +38,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ghcr.io/worty/Blitzerbot:${{ env.GIT_TAG }}, ghcr.io/worty/Blitzerbot:latest
+          tags: ghcr.io/worty/blitzerbot:${{ env.GIT_TAG }}, ghcr.io/worty/blitzerbot:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
       - # Temp fix
