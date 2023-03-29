@@ -23,4 +23,7 @@ WORKDIR /app
 ADD crontab /etc/cron.d/blitzerbot-cron
 RUN chmod 0644 /etc/cron.d/blitzerbot-cron
 RUN crontab /etc/cron.d/blitzerbot-cron
-CMD ["cron", "-f"]
+
+ADD docker-entry.sh /docker-entry.sh
+ENTRYPOINT ["/docker-entry.sh"]
+CMD ["cron","-f", "-l", "2"]
