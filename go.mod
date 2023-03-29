@@ -1,4 +1,4 @@
-module github.com/worty/GO-Blitzer
+module github.com/worty/Blitzerbot
 
 go 1.20
 
