@@ -5,6 +5,7 @@ services:
     build:
       context: .
       network: host
+    image: ghcr.io/worty/Blitzerbot:latest
     container_name: blitzerbot
     restart: always
     network_mode: host
