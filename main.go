@@ -5,11 +5,9 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
-	"github.com/dghubble/oauth1"
-	twitter "github.com/g8rswimmer/go-twitter/v2"
+	twitterscraper "github.com/n0madic/twitter-scraper"
 )
 
 type authorize struct{}
@@ -31,33 +29,14 @@ func main() {
 	prodmode := flag.Bool("prodmode", false, "If true, send via telegram")
 	flag.Parse()
 	// init twitter client
-	config := oauth1.NewConfig(envConfig.Twitter_consumer_key, envConfig.Twitter_consumer_secret)
-	token := oauth1.NewToken(envConfig.Twitter_access_token, envConfig.Twitter_access_secret)
-	httpClient := config.Client(oauth1.NoContext, token)
-
-	client := &twitter.Client{
-		Authorizer: &authorize{},
-		Client:     httpClient,
-		Host:       "https://api.twitter.com",
-	}
-
-	opts := twitter.UserTweetTimelineOpts{
-		TweetFields: []twitter.TweetField{twitter.TweetFieldCreatedAt, twitter.TweetFieldAuthorID, twitter.TweetFieldConversationID, twitter.TweetFieldAttachments},
-		Expansions:  []twitter.Expansion{twitter.ExpansionAttachmentsMediaKeys},
-		UserFields:  []twitter.UserField{},
-		MediaFields: []twitter.MediaField{twitter.MediaFieldURL, twitter.MediaFieldPreviewImageURL, twitter.MediaFieldType},
-		MaxResults:  5,
-	}
+	scraper := twitterscraper.New()
 
 	log.Println("Getting timeline...")
-	timeline, err := client.UserTweetTimeline(context.Background(), envConfig.Twitter_target_account, opts)
-	if err != nil {
-		log.Panicf("user tweet timeline error: %v", err)
-	}
+	ch := scraper.GetTweets(context.Background(), envConfig.Twitter_target_account, 10)
 
-	for _, tweet := range timeline.Raw.Tweets {
-		if strings.Contains(tweet.Text, "blitzen") || strings.Contains(tweet.Text, "Geschwindigkeitskontrollen") {
-			tweetdate, err := time.Parse(time.RFC3339, tweet.CreatedAt)
+	for tweet := range ch {
+		if checkIfKeywordInText(tweet.Text) {
+			tweetdate := tweet.TimeParsed
 			if err != nil {
 				log.Printf("error parsing date: %v\n", err)
 				continue
@@ -69,18 +48,12 @@ func main() {
 				continue
 			}
 
-			if tweet.Attachments == nil || len(tweet.Attachments.MediaKeys) == 0 {
-				log.Println("found Blitzer in time but no image")
+			if tweet.Photos == nil || len(tweet.Photos) == 0 {
+				log.Println("found in time but no image")
 				continue
 			}
 
-			mediakey := tweet.Attachments.MediaKeys[0]
-			url, err := findUrlByMediaKey(mediakey, timeline.Raw.Includes.Media)
-			if err != nil {
-				log.Printf("found Blitzer but no image: %v\n", err)
-				continue
-			}
-
+			url := tweet.Photos[0].URL
 			log.Printf("URL: %s\n", url)
 			text, err := doOCR(url)
 			if err != nil {

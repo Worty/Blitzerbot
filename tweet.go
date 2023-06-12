@@ -1,20 +1,21 @@
 package main
 
 import (
-	"fmt"
+	"strings"
 	"time"
 
 	"github.com/cavaliergopher/grab/v3"
-	twitter "github.com/g8rswimmer/go-twitter/v2"
 )
 
-func findUrlByMediaKey(mediaKey string, media []*twitter.MediaObj) (string, error) {
-	for _, m := range media {
-		if m.Key == mediaKey && m.Type == "photo" {
-			return m.URL, nil
+var keywords = []string{"blitzen", "Geschwindigkeitskontrollen", "Semi-Station", "geblitzt"}
+
+func checkIfKeywordInText(text string) bool {
+	for _, keyword := range keywords {
+		if strings.Contains(text, keyword) {
+			return true
 		}
 	}
-	return "", fmt.Errorf("could not find media key %s", mediaKey)
+	return false
 }
 
 func checkIfInTargetTimeRange(date time.Time) bool {
