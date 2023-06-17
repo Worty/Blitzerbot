@@ -15,9 +15,18 @@ func doOCR(url string) (string, error) {
 	}
 	client := gosseract.NewClient()
 	defer client.Close()
-	client.SetLanguage("deu")
-	client.SetImage(path)
-	text, _ := client.Text()
+	err = client.SetLanguage("deu")
+	if err != nil {
+		return "", err
+	}
+	err = client.SetImage(path)
+	if err != nil {
+		return "", err
+	}
+	text, err := client.Text()
+	if err != nil {
+		return "", err
+	}
 	return text, nil
 }
 
@@ -37,6 +46,9 @@ func cleanupOCRText(text string) string {
 			result = regexp.MustCompile(`ao`).ReplaceAllString(result, "")     // common ocr error in specific picture, remove it
 			result = regexp.MustCompile(`N ı 8`).ReplaceAllString(result, "")  // common ocr error in specific picture, remove it
 			result = regexp.MustCompile(`—`).ReplaceAllString(result, "")      // common ocr error in specific picture, remove it
+			result = regexp.MustCompile(`N 2 =.`).ReplaceAllString(result, "") // common ocr error in specific picture, remove it
+			result = regexp.MustCompile(`ER \|`).ReplaceAllString(result, "")  // common ocr error in specific picture, remove it
+			result = regexp.MustCompile(`\s\S\s`).ReplaceAllString(result, "") // common ocr error in specific picture, remove it
 			newlines = append(newlines, result)
 		}
 	}
